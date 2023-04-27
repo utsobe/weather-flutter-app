@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:weather_flutter_app/services/location.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather_flutter_app/services/networking.dart';
 
 import '../services/weather_model.dart';
 
@@ -16,39 +17,27 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  late double latitude;
+  late double longitude;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getLocation();
+    getLocationData();
   }
 
-  void getLocation() async {
+  void getLocationData() async {
     Location location = Location();
     await location.getCurrentLocation();
-    getData();
-    print(location.latitude);
-    print(location.longitude);
-  }
 
-  Future<WeatherModel?> getData() async {
-    try {
-      var url = Uri.parse(
-          'https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=4b0e740606a6e3d318b40d77b6383f62');
-      http.Response response = await http.get(url);
+    latitude = location.latitude;
+    longitude = location.longitude;
 
-      if (response.statusCode == 200) {
-        final data = response.body;
-        final weatherModel = weatherModelFromJson(data);
+    NetworkHelper networkHelper = NetworkHelper(
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey');
 
-        print(data);
-        print(weatherModel);
-      } else {
-        print(response.statusCode);
-      }
-    } catch (e) {
-      print(e);
-    }
+    var weatherData = await networkHelper.getData();
   }
 
   @override
@@ -56,16 +45,3 @@ class _LoadingScreenState extends State<LoadingScreen> {
     return Scaffold();
   }
 }
-
-
-
-      // body: Center(
-      //   child: TextButton(
-      //     onPressed: () {
-      //       //Get the current location
-      //       getLocation();
-      //     },
-      //     child: Text('Get Location'),
-      //   ),
-      // ),
-    
